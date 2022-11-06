@@ -1,5 +1,5 @@
 # rosehip
-A Work-In-Progress 64-bit operating system written in x86 assembly and Davis.
+A Work-In-Progress 16-bit operating system written in x86 assembly and Davis, modeled after my own brain.
 
 # Notable Features
 * All code is run in kernel space, there is minimal virtualization of memory and no disk swapping.
