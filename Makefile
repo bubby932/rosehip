@@ -14,7 +14,7 @@ all: floppy_image
 floppy_image: $(BUILD_DIR)/main_floppy.img
 
 $(BUILD_DIR)/main_floppy.img: bootloader kernel
-	dd if=/dev/zero of=$(BUILD_DIR)/main_floppy.img bs=1048576 count=16
+	dd if=/dev/zero of=$(BUILD_DIR)/main_floppy.img bs=1M count=16
 	mkfs.fat -F 16 -n "NBOS" $(BUILD_DIR)/main_floppy.img
 	dd if=$(BUILD_DIR)/bootloader.bin of=$(BUILD_DIR)/main_floppy.img conv=notrunc
 	mcopy -i $(BUILD_DIR)/main_floppy.img $(BUILD_DIR)/kernel.bin "::kernel.bin"
@@ -46,3 +46,5 @@ always:
 #
 clean:
 	rm -rf $(BUILD_DIR)/*
+
+patch_bootloader:
