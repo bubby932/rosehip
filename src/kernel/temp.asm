@@ -9,9 +9,11 @@
 start:
     mov si, msg_hello
     call puts
-
+    call panic
 
 panic:
+    mov si, msg_kernel_panic
+    call puts
     cli
     hlt
 
@@ -42,4 +44,5 @@ puts:
     pop si
     ret
 
+msg_kernel_panic: db '! KERNEL PANIC !', ENDL, 'An unrecoverable error occurred during initialization,', ENDL, 0
 msg_hello: db 'Bootloader success, hello from the Rosehip kernel!', ENDL, 0
