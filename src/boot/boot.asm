@@ -36,42 +36,64 @@ start:
     ; C:
     ; root_dir_sectors = ((fat_boot->root_entry_count * 32) + (fat_boot->bytes_per_sector - 1)) / fat_boot->bytes_per_sector;
 
-    ; asm:
-    ; (fat_boot->root_entry_count * 32)
-    mov bx, [root_entry_count]
-    mul bx, 32
+    ; ax = (fat_boot->root_entry_count * 32)
+    mov ax, [root_entry_count]
+    imul ax, 32
 
-    ; (fat_boot->bytes_per_sector - 1)
-    mov cx, [bytes_per_sector]
-    dec cx
+    ; bx = (fat_boot->bytes_per_sector - 1)
+    mov bx, [bytes_per_sector]
+    sub bx, 1
 
-    ; () + ()
-    add bx, bx, cx
+    ; ax = (ax + bx)
+    add ax, bx
 
-    ; () / fat_boot->bytes_per_sector
-    div bx, bx, [bytes_per_sector]
+    ; ax = (ax / fat_boot->bytes_per_sector)
+    mov dx, 0
+    idiv word [bytes_per_sector]
+
+    cmp ax, 0
+    je .no_remainder
+
+    .with_remainder:
+    inc ax
+    .no_remainder:
 
     ; C:
-    ; first_data_sector = fat_boot->reserved_sector_count + (fat_boot->table_count * fat_size) + root_dir_sectors;
+    ; first_data_sector = fat_boot->reserved_sector_count + (fat_boot->table_count * fat_boot->table_size_16) + root_dir_sectors;
 
-    ; asm:
-    ; fat_boot->reserved_sector_count
-    mov al, [reserved_sector_count]
+    ; root_dir_sectors = ax
+    mov [root_dir_sectors], ax
 
-    ; (fat_boot->table_count * fat_size)
-    mov ah, [table_size_16]
-    mul ah, [table_count]
+    ; cx = (fat_boot->table_count * fat_size)
+    mov cx, [table_count]
+    imul cx, [table_size_16]
 
-    ; () + ()
-    add al, al, ah
+    ; bx = (fat_boot->reserved_sector_count + cx)
+    mov bx, [reserved_sector_count]
+    add bx, cx
+ 
+    ; ax = (bx + root_dir_sectors (ax))
+    add ax, bx
 
-    ; () + root_dir_sectors
-    mov ax, al
-    add ax, ax, bx
+    ; first_data_sector = ax
+    mov [first_data_sector], ax
 
-    ; TODO - 
-    ; We have the first data sector, now we just need to read it and begin parsing the FAT.
-    ; From there, we need to actually read 'KERNEL  BIN'
+    ; C: first_root_dir_sector = first_data_sector - root_dir_sectors;
+    sub ax, [root_dir_sectors]
+    mov [first_root_dir_sector], ax
+
+    ; C: first_sector_of_cluster = ((cluster - 2) * fat_boot->sectors_per_cluster) + first_data_sector;
+    
+    ; ax = (cluster - 2)
+    
+
+something_broke:
+    cli
+    hlt
+
+root_dir_sectors: dw 0
+first_data_sector: dw 0
+first_root_dir_sector: dw 0
 
 times 510-($-$$) db 0
 dw 0AA55h
