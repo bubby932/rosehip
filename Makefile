@@ -47,4 +47,8 @@ always:
 clean:
 	rm -rf $(BUILD_DIR)/*
 
-patch_bootloader:
+#
+# Patch kernel
+#
+update_kernel: kernel
+	mcopy -i $(BUILD_DIR)/main_floppy.img $(BUILD_DIR)/kernel.bin "::kernel.bin"
